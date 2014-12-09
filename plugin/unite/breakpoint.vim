@@ -6,6 +6,8 @@ command! -nargs=* -complete=file
       \ BreakaddFile call s:breakadd_file(<f-args>)
 command! -nargs=1 -complete=function
       \ BreakaddFunc call s:breakadd_func(<q-args>)
+command! -nargs=*
+      \ Breakdel call s:breakdel(<q-args>)
 
 function! s:breakadd_file(...)
   let li_cmd = ['breakadd']
@@ -29,13 +31,23 @@ function! s:breakadd_file(...)
 endfunction
 
 function! s:breakadd_func(st_arg)
-  "TODO: when ()
-  let li_cmd = ['breakadd', 'func', a:st_arg[:-3]]
+  let st_func = substitute(a:st_arg, '(.*$', '', '')
+  let li_cmd = ['breakadd', 'func', st_func]
   try
     exe join(li_cmd)
   catch /.*/
     " TODO: throw error
     echomsg 'breakadd is fail'
+  endtry
+endfunction
+
+function! s:breakdel(st_arg)
+  let li_cmd = ['breakdel', empty(a:st_arg) ? 'here' : a:st_arg]
+  try
+    exe join(li_cmd)
+  catch /.*/
+    " TODO: throw error
+    echomsg 'breakdel is fail'
   endtry
 endfunction
 
