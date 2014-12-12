@@ -1,7 +1,6 @@
 let s:save_cpo = &cpo
 set cpo&vim
 
-command! Ubreakpoint Unite breakpoint
 command! -nargs=* -complete=file
       \ BreakaddFile call s:breakadd_file(<f-args>)
 command! -nargs=1 -complete=function
@@ -25,8 +24,7 @@ function! s:breakadd_file(...)
   try
     exe join(li_cmd)
   catch /.*/
-    " TODO: throw error
-    echomsg 'breakadd is fail'
+    echo 'breakadd is fail'
   endtry
 endfunction
 
@@ -36,8 +34,7 @@ function! s:breakadd_func(st_arg)
   try
     exe join(li_cmd)
   catch /.*/
-    " TODO: throw error
-    echomsg 'breakadd is fail'
+    echo 'breakadd is fail'
   endtry
 endfunction
 
@@ -46,8 +43,7 @@ function! s:breakdel(st_arg)
   try
     exe join(li_cmd)
   catch /.*/
-    " TODO: throw error
-    echomsg 'breakdel is fail'
+    echo 'breakdel is fail'
   endtry
 endfunction
 
