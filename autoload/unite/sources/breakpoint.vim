@@ -4,13 +4,8 @@ set cpo&vim
 function! unite#sources#breakpoint#define() "{{{
   return s:di_source
 endfunction "}}}
-
-let s:di_source = {
-      \ 'name' : 'breakpoint',
-      \ }
-
-function! s:di_source.gather_candidates(args, context) "{{{
-  " Get command list.
+function! unite#sources#breakpoint#get_breaklist() "{{{
+  " Get breaklist
   redir => st_result
   silent! breaklist
   redir END
@@ -25,31 +20,48 @@ function! s:di_source.gather_candidates(args, context) "{{{
     return []
   endif
 
-  let nu_no_len = len(max(map(copy(li_result), 'v:val[0]')))
-  let nu_row_no_len = len(max(map(copy(li_result), 'v:val[4]')))
-  let st_fmt = '%'. nu_no_len. 'd:[L%0'. nu_row_no_len. 'd] %s'
-
-  let li_return = []
-  for li_row in li_result
-    let st_no = li_row[0]
-    let nu_is_file = li_row[1] == 'file'
-    let st_file = li_row[2]
-    let st_row_no = li_row[4]
-
-    let di_row = {}
-    let di_row.word = printf(st_fmt, st_no, st_row_no, st_file)
-    " TODO: make kind to jump of function
-    let di_row.kind = nu_is_file ? 'jump_list' : 'common'
-    let di_row.action__path = st_file
-    let di_row.action__line = st_row_no
-    call add(li_return, di_row)
-  endfor
-
-  return li_return
+  return map(li_result, '{
+        \   "break_no": get(v:val, 0, 0)
+        \ , "is_file": get(v:val, 1, "") == "file"
+        \ , "name": get(v:val, 2, "")
+        \ , "line_no": get(v:val,  4, 0)
+        \ }')
 endfunction "}}}
 
-" TODO: sort
-" TODO: preview
+let s:di_source = {
+      \ 'name' : 'breakpoint',
+      \ }
+
+function! s:di_source.gather_candidates(args, context) "{{{
+  let li_breaklist = unite#sources#breakpoint#get_breaklist()
+  if empty(li_breaklist)
+    return []
+  endif
+
+  let nu_break_no_len = len(max(map(copy(li_breaklist), 'v:val.break_no')))
+  let nu_line_no_len = len(max(map(copy(li_breaklist), 'v:val.line_no')))
+  let li_fmt = [
+        \   '%s'
+        \ , 'L%0'. nu_line_no_len. 'd'
+        \ , 'B%0'. nu_break_no_len. 'd'
+        \ , '(%s)'
+        \ ]
+
+  let li_candidates = []
+  for di_break in li_breaklist
+    let di_line = {}
+    let di_line.word = printf(join(li_fmt), fnamemodify(di_break.name, ':t'), di_break.line_no, di_break.break_no, fnamemodify(di_break.name, ':p'))
+    " TODO: make kind to jump of function
+    let di_line.kind = di_break.is_file ? 'jump_list' : 'common'
+    let di_line.action__path = di_break.name
+    let di_line.action__line = di_break.line_no
+    call add(li_candidates, di_line)
+  endfor
+
+  let li_candidates = unite#util#sort_by(li_candidates, 'v:val.action__path . printf("%0' . nu_line_no_len . 'd", v:val.action__line)')
+
+  return li_candidates
+endfunction "}}}
 
 let &cpo = s:save_cpo
 unlet s:save_cpo
