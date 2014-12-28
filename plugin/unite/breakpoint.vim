@@ -22,11 +22,11 @@ endfunction "}}}
 function! s:breakadd_file(...) "{{{
   let li_cmd = ['breakadd', 'file']
   if a:0 == 2
-    let li_cmd = li_cmd + a:000
+    let li_cmd += a:000
   elseif a:0 == 1
-    let li_cmd = li_cmd + ['1', a:1]
+    let li_cmd += ['1', a:1]
   elseif a:0 == 0
-    let li_cmd = li_cmd + [line('.'), expand('%:p')]
+    let li_cmd += [line('.'), expand('%:p')]
   else
     echomsg 'args count is fail'
     return 1

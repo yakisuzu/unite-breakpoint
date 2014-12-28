@@ -50,7 +50,13 @@ function! s:di_source.gather_candidates(args, context) "{{{
   let li_candidates = []
   for di_break in li_breaklist
     let di_line = {}
-    let di_line.word = printf(join(li_fmt), fnamemodify(di_break.name, ':t'), di_break.line_no, di_break.break_no, fnamemodify(di_break.name, ':p'))
+    let di_line.word = printf(
+          \   join(li_fmt)
+          \ , fnamemodify(di_break.name, ':t')
+          \ , di_break.line_no
+          \ , di_break.break_no
+          \ , fnamemodify(di_break.name, ':p')
+          \ )
     " TODO: make kind to jump of function
     let di_line.kind = di_break.is_file ? 'jump_list' : 'common'
     let di_line.action__path = di_break.name
@@ -58,7 +64,8 @@ function! s:di_source.gather_candidates(args, context) "{{{
     call add(li_candidates, di_line)
   endfor
 
-  let li_candidates = unite#util#sort_by(li_candidates, 'v:val.action__path . printf("%0' . nu_line_no_len . 'd", v:val.action__line)')
+  let li_candidates = unite#util#sort_by(li_candidates
+        \ , 'v:val.action__path . printf("%0' . nu_line_no_len . 'd", v:val.action__line)')
 
   return li_candidates
 endfunction "}}}
